@@ -46,6 +46,7 @@ namespace QBitTorrentSpeedScheduler.Service
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _tokenProvider.AttachToWorker(stoppingToken);
+            await DelayBeforeStart(stoppingToken);
             while (!stoppingToken.IsCancellationRequested && !MaxFailsCount())
             {
                 try
@@ -85,6 +86,16 @@ namespace QBitTorrentSpeedScheduler.Service
 
         private bool MaxFailsCount()
             => _failCount >= (_optionsMonitor.CurrentValue.Constraints ?? Constraints.Default).MaxRetries;
+
+        private async Task DelayBeforeStart(CancellationToken stoppingToken)
+        {
+            var delay = TimeSpan.FromSeconds(_optionsMonitor.CurrentValue.Constraints?.WaitOnStartSeconds ?? default);
+            if (delay > TimeSpan.Zero)
+            {
+                _logChannel.LogInfo($@"Waiting until {DateTime.Now.TimeOfDay.Add(delay):hh\:mm\:ss}");
+                await Task.Delay(delay, stoppingToken);
+            }
+        }
     }
 
     internal static partial class Extensions
