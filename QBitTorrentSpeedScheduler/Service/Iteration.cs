@@ -47,6 +47,8 @@ namespace QBitTorrentSpeedScheduler.Service
                     _token));
             var nextTime = RemainsUntilNextEvent(until);
             _logChannel.LogInfo($"new upload speed {uploadMegaBits} MBit/s, next run {until}");
+            // make sure timer won't wake up a bit early because of negative deviations in precision.
+            nextTime += TimeSpan.FromMilliseconds(50);
             return Task.Delay(nextTime, _token);
         }
 
