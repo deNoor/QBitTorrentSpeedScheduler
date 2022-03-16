@@ -33,17 +33,39 @@ namespace QBitTorrentSpeedScheduler.Service
 
         public override Task StartAsync(CancellationToken cancellationToken)
         {
-            _logChannel.LogInfo("Starting the service.");
+            _logChannel.LogInfo("starting the service.");
             return base.StartAsync(cancellationToken);
         }
 
         public override Task StopAsync(CancellationToken cancellationToken)
         {
-            _logChannel.LogInfo("Shutting down the service.");
+            _logChannel.LogInfo("shutting down the service.");
             return base.StopAsync(cancellationToken);
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+            => Task.Run(
+                async () =>
+                {
+                    try
+                    {
+                        await WorkerMain(stoppingToken);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                    }
+                    catch (Exception e)
+                    {
+                        _logChannel.LogError($"unhandled exception in main path: {e.Message}");
+                    }
+                    finally
+                    {
+                        _appLifetime.StopApplication();
+                    }
+                },
+                stoppingToken);
+
+        private async Task WorkerMain(CancellationToken stoppingToken)
         {
             _tokenProvider.AttachToWorker(stoppingToken);
             await DelayBeforeStart(stoppingToken);
@@ -81,7 +103,6 @@ namespace QBitTorrentSpeedScheduler.Service
                     }
                 }
             }
-            _appLifetime.StopApplication();
         }
 
         private bool MaxFailsCount()
@@ -92,7 +113,7 @@ namespace QBitTorrentSpeedScheduler.Service
             var delay = TimeSpan.FromSeconds(_optionsMonitor.CurrentValue.Constraints?.WaitOnStartSeconds ?? default);
             if (delay > TimeSpan.Zero)
             {
-                _logChannel.LogInfo($@"Waiting until {DateTime.Now.TimeOfDay.Add(delay):hh\:mm\:ss}");
+                _logChannel.LogInfo($@"waiting until {DateTime.Now.TimeOfDay.Add(delay):hh\:mm\:ss}");
                 await Task.Delay(delay, stoppingToken);
             }
         }
