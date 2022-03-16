@@ -26,7 +26,7 @@ namespace QBitTorrentSpeedScheduler.Service
         public async Task<int> GetSpeedLimitsModeAsync(CancellationToken token = default)
         {
             var response = await _httpClient.GetAsync("speedLimitsMode", token);
-            LogResponseError(response);
+            await EnsureSuccessStatusCode(response);
             return await JsonSerializer.DeserializeAsync<int>(
                 await response.Content.ReadAsStreamAsync(token),
                 cancellationToken: token);
@@ -35,7 +35,7 @@ namespace QBitTorrentSpeedScheduler.Service
         public async Task ToggleSpeedLimitsModeAsync(CancellationToken token = default)
         {
             var response = await _httpClient.GetAsync("toggleSpeedLimitsMode", token);
-            LogResponseError(response);
+            await EnsureSuccessStatusCode(response);
         }
 
         public async Task SetUploadLimitAsync(int speedInBytes, CancellationToken token = default)
@@ -44,7 +44,7 @@ namespace QBitTorrentSpeedScheduler.Service
                 "setUploadLimit",
                 new FormUrlEncodedContent(new Dictionary<string, string?> { { "limit", $"{speedInBytes}" } }!),
                 token);
-            LogResponseError(response);
+            await EnsureSuccessStatusCode(response);
         }
 
         public async Task ApplyToRegularLimitsAsync(Func<WebUiApi, Task> action)
@@ -53,18 +53,15 @@ namespace QBitTorrentSpeedScheduler.Service
             await action(this);
         }
 
-        private void LogResponseError(HttpResponseMessage response)
+        private async Task EnsureSuccessStatusCode(HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode)
             {
-                var logger = _logChannel;
-                var _ = Task.Run(
-                    async () => logger.LogError(
-                        "interaction with WebUI failed.",
-                        $"{(int)response.StatusCode} {response.StatusCode}",
-                        $"{response.RequestMessage?.RequestUri}",
-                        $"{await response.Content.ReadAsStringAsync()}"),
-                    CancellationToken.None);
+                _logChannel.LogError(
+                    "interaction with WebUI failed.",
+                    $"{(int)response.StatusCode} {response.StatusCode}",
+                    $"{response.RequestMessage?.RequestUri}",
+                    $"{await response.Content.ReadAsStringAsync()}");
             }
             response.EnsureSuccessStatusCode();
         }
