@@ -3,7 +3,7 @@ Windows service to control upload speed of [qBittorrent](https://www.qbittorrent
 
 Made for personal usage — feature requests or improvements are not accepted.
 
-Requires [.NET 5](https://dotnet.microsoft.com/en-us/download/dotnet/5.0) runtime. Choose Desktop Runtime for Windows x64. Use `dotnet --info` to check if you already have it.
+Requires [.NET 5](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) runtime. Choose Desktop Runtime for Windows x64. Use `dotnet --info` to check if you already have it.
 
 ### 1. Setup qBittorrent. 
 - go to Settings → Web UI:
