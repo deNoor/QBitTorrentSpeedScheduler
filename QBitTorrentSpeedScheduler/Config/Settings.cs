@@ -24,16 +24,16 @@ namespace QBitTorrentSpeedScheduler.Config
 
         internal static readonly Settings Default = new()
         {
-            Network = new() { Port = Network.DefaultPort },
-            LogFile = new() { Enabled = false, Folder = AppContext.BaseDirectory, ErrorsOnly = false },
+            Network = new() { Port = Network.DefaultPort, },
+            LogFile = new() { Enabled = false, Folder = AppContext.BaseDirectory, ErrorsOnly = false, },
             Schedule = new()
             {
-                new() { Time = TimeSpan.Parse("01:00"), UploadMegaBits = 25 },
-                new() { Time = TimeSpan.Parse("02:00"), UploadMegaBits = 300 },
-                new() { Time = TimeSpan.Parse("08:00"), UploadMegaBits = 100 },
-                new() { Time = TimeSpan.Parse("12:00"), UploadMegaBits = 50 },
-                new() { Time = TimeSpan.Parse("16:00"), UploadMegaBits = 25 },
-                new() { Time = TimeSpan.Parse("18:00"), UploadMegaBits = 0 },
+                new() { Time = TimeSpan.Parse("01:00"), UploadMegaBits = 25, },
+                new() { Time = TimeSpan.Parse("02:00"), UploadMegaBits = 300, },
+                new() { Time = TimeSpan.Parse("08:00"), UploadMegaBits = 100, },
+                new() { Time = TimeSpan.Parse("12:00"), UploadMegaBits = 50, },
+                new() { Time = TimeSpan.Parse("16:00"), UploadMegaBits = 25, },
+                new() { Time = TimeSpan.Parse("18:00"), UploadMegaBits = 0, },
             },
             Constraints = Constraints.Default,
         };
@@ -53,13 +53,7 @@ namespace QBitTorrentSpeedScheduler.Config
             var filePath = Path.Combine(AppContext.BaseDirectory, FileName);
             if (!File.Exists(filePath))
             {
-                await using var fileStream = new FileStream(
-                    filePath,
-                    FileMode.Create,
-                    FileAccess.Write,
-                    FileShare.None,
-                    4096,
-                    true);
+                await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
                 await JsonSerializer.SerializeAsync(fileStream, AllConfig.Default, _jsonOptions);
             }
         }
@@ -83,7 +77,7 @@ namespace QBitTorrentSpeedScheduler.Config
         public (int UploadMegaBits, TimeSpan Until) FindCurrentSpeed(TimeSpan now)
         {
             var list = Schedule!;
-            var currentIndex = list.BinarySearch(new() { Time = now }, RateLimitRule.TimeComparer);
+            var currentIndex = list.BinarySearch(new() { Time = now, }, RateLimitRule.TimeComparer);
             if (currentIndex < 0)
             {
                 currentIndex = ~currentIndex - 1;
@@ -99,22 +93,17 @@ namespace QBitTorrentSpeedScheduler.Config
 
     internal static partial class Extensions
     {
-        public static IConfigurationBuilder AddSetting(this IConfigurationBuilder configurationBuilder)
-            => configurationBuilder.AddJsonFile(Settings.FileName, false, true);
+        public static IConfigurationBuilder AddSetting(this IConfigurationBuilder configurationBuilder) =>
+            configurationBuilder.AddJsonFile(Settings.FileName, false, true);
 
-        public static IServiceCollection AddSettings(
-            this IServiceCollection serviceCollection,
-            IConfiguration configuration)
+        public static IServiceCollection AddSettings(this IServiceCollection serviceCollection, IConfiguration configuration)
         {
             serviceCollection.AddOptions<Settings>()
                .Bind(configuration.GetSection(nameof(Settings)))
                .Configure(
                     settings =>
                     {
-                        settings.Schedule =
-                            settings.Schedule?.Where(x => x.IsValid())
-                               .OrderBy(x => x.Time)
-                               .ToList()
+                        settings.Schedule = settings.Schedule?.Where(x => x.IsValid()).OrderBy(x => x.Time).ToList()
                             ?? new List<RateLimitRule>();
                         settings.Constraints ??= Constraints.Default;
                     });

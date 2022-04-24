@@ -27,9 +27,7 @@ namespace QBitTorrentSpeedScheduler.Service
         {
             var response = await _httpClient.GetAsync("speedLimitsMode", token);
             await EnsureSuccessStatusCode(response);
-            return await JsonSerializer.DeserializeAsync<int>(
-                await response.Content.ReadAsStreamAsync(token),
-                cancellationToken: token);
+            return await JsonSerializer.DeserializeAsync<int>(await response.Content.ReadAsStreamAsync(token), cancellationToken: token);
         }
 
         public async Task ToggleSpeedLimitsModeAsync(CancellationToken token = default)
@@ -42,7 +40,7 @@ namespace QBitTorrentSpeedScheduler.Service
         {
             var response = await _httpClient.PostAsync(
                 "setUploadLimit",
-                new FormUrlEncodedContent(new Dictionary<string, string?> { { "limit", $"{speedInBytes}" } }!),
+                new FormUrlEncodedContent(new Dictionary<string, string?> { { "limit", $"{speedInBytes}" }, }!),
                 token);
             await EnsureSuccessStatusCode(response);
         }
@@ -59,7 +57,7 @@ namespace QBitTorrentSpeedScheduler.Service
             {
                 _logChannel.LogError(
                     "interaction with WebUI failed.",
-                    $"{(int)response.StatusCode} {response.StatusCode}",
+                    $"{(int) response.StatusCode} {response.StatusCode}",
                     $"{response.RequestMessage?.RequestUri}",
                     $"{await response.Content.ReadAsStringAsync()}");
             }
@@ -108,8 +106,7 @@ namespace QBitTorrentSpeedScheduler.Service
             services.AddHttpClient<WebUiApi>(
                 (sc, client) =>
                 {
-                    var port = sc.GetRequiredService<IOptionsMonitor<Settings>>().CurrentValue.Network?.Port
-                        ?? Network.DefaultPort;
+                    var port = sc.GetRequiredService<IOptionsMonitor<Settings>>().CurrentValue.Network?.Port ?? Network.DefaultPort;
                     client.BaseAddress = new($"http://127.0.0.1:{port}/api/v2/transfer/");
                     client.Timeout = TimeSpan.FromSeconds(10);
                     client.DefaultRequestVersion = HttpVersion.Version20;

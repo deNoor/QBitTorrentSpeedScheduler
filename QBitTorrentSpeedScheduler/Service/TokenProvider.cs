@@ -70,8 +70,8 @@ namespace QBitTorrentSpeedScheduler.Service
             _disposed = true;
         }
 
-        private static void ThrowIfNotAttached()
-            => throw new InvalidOperationException(
+        private static void ThrowIfNotAttached() =>
+            throw new InvalidOperationException(
                 $"Need to register service worker token with {nameof(TokenProvider)}.{nameof(AttachToWorker)}.");
 
         private void ThrowIfDisposed()
@@ -85,7 +85,6 @@ namespace QBitTorrentSpeedScheduler.Service
 
     internal static partial class Extensions
     {
-        public static IServiceCollection AddTokenProvider(this IServiceCollection services)
-            => services.AddSingleton<TokenProvider>();
+        public static IServiceCollection AddTokenProvider(this IServiceCollection services) => services.AddSingleton<TokenProvider>();
     }
 }

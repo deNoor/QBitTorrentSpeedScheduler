@@ -16,18 +16,19 @@ namespace QBitTorrentSpeedScheduler
             await host.RunAsync();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args)
-            => Host.CreateDefaultBuilder(args)
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
                .UseWindowsService(options => options.ServiceName = "qBitTorrent speed scheduler")
                .ConfigureLogging(builder => builder.ClearProviders())
                .ConfigureAppConfiguration(builder => builder.AddAllConfig())
-               .ConfigureServices(
-                    (hostContext, services) => services.AddAllConfig(hostContext.Configuration).AddHostedWorker())
+               .ConfigureServices((hostContext, services) => services.AddAllConfig(hostContext.Configuration).AddHostedWorker())
                .UseDefaultServiceProvider(
                     options =>
                     {
+#if DEBUG
                         options.ValidateOnBuild = true;
                         options.ValidateScopes = true;
+#endif
                     });
     }
 }

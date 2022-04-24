@@ -11,7 +11,6 @@ namespace QBitTorrentSpeedScheduler.Service
 
     internal static partial class Extensions
     {
-        public static IServiceCollection AddScopedToken(this IServiceCollection services)
-            => services.AddScoped<ScopedToken>();
+        public static IServiceCollection AddScopedToken(this IServiceCollection services) => services.AddScoped<ScopedToken>();
     }
 }

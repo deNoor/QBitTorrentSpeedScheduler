@@ -41,10 +41,7 @@ namespace QBitTorrentSpeedScheduler.Service
 
             var (uploadMegaBits, until) = _settings.FindCurrentSpeed(DateTime.Now.TimeOfDay);
             var newUploadSpeed = _converter.BytesFromMegaBits(uploadMegaBits);
-            await _api.ApplyToRegularLimitsAsync(
-                async api => await api.SetUploadLimitAsync(
-                    newUploadSpeed,
-                    _token));
+            await _api.ApplyToRegularLimitsAsync(async api => await api.SetUploadLimitAsync(newUploadSpeed, _token));
             var nextTime = RemainsUntilNextEvent(until);
             _logChannel.LogInfo($"new upload speed {uploadMegaBits} MBit/s, next run {until}");
             // make sure timer won't wake up a bit early because of negative deviations in precision.
@@ -65,7 +62,7 @@ namespace QBitTorrentSpeedScheduler.Service
 
     internal static partial class Extensions
     {
-        public static IServiceCollection AddIteration(this IServiceCollection services)
-            => services.AddScoped<Iteration>().AddScopedToken().AddSpeedConverter().AddWebUiApi();
+        public static IServiceCollection AddIteration(this IServiceCollection services) =>
+            services.AddScoped<Iteration>().AddScopedToken().AddSpeedConverter().AddWebUiApi();
     }
 }

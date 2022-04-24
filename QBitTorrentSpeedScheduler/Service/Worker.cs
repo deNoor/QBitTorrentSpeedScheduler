@@ -43,8 +43,8 @@ namespace QBitTorrentSpeedScheduler.Service
             return base.StopAsync(cancellationToken);
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
-            => Task.Run(
+        protected override Task ExecuteAsync(CancellationToken stoppingToken) =>
+            Task.Run(
                 async () =>
                 {
                     try
@@ -93,8 +93,7 @@ namespace QBitTorrentSpeedScheduler.Service
                     _logChannel.LogError(e.Message);
                     if (!MaxFailsCount())
                     {
-                        _logChannel.LogInfo(
-                            $@"failed {_failCount} times, next retry {DateTime.Now.TimeOfDay.Add(delay):hh\:mm\:ss}");
+                        _logChannel.LogInfo($@"failed {_failCount} times, next retry {DateTime.Now.TimeOfDay.Add(delay):hh\:mm\:ss}");
                         await Task.Delay(delay, stoppingToken);
                     }
                     else
@@ -105,8 +104,7 @@ namespace QBitTorrentSpeedScheduler.Service
             }
         }
 
-        private bool MaxFailsCount()
-            => _failCount >= (_optionsMonitor.CurrentValue.Constraints ?? Constraints.Default).MaxRetries;
+        private bool MaxFailsCount() => _failCount >= (_optionsMonitor.CurrentValue.Constraints ?? Constraints.Default).MaxRetries;
 
         private async Task DelayBeforeStart(CancellationToken stoppingToken)
         {
@@ -121,7 +119,7 @@ namespace QBitTorrentSpeedScheduler.Service
 
     internal static partial class Extensions
     {
-        public static IServiceCollection AddHostedWorker(this IServiceCollection services)
-            => services.AddIteration().AddLogChannel().AddTokenProvider().AddHostedService<Worker>();
+        public static IServiceCollection AddHostedWorker(this IServiceCollection services) =>
+            services.AddIteration().AddLogChannel().AddTokenProvider().AddHostedService<Worker>();
     }
 }

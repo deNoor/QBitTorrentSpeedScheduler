@@ -21,11 +21,10 @@ namespace QBitTorrentSpeedScheduler.Service
         public GlobalLogChannel(IOptionsMonitor<Settings> optionsMonitor)
         {
             _linesChannel = Channel.CreateUnbounded<ICollection<string>>(
-                new() { SingleReader = true, AllowSynchronousContinuations = true });
+                new() { SingleReader = true, AllowSynchronousContinuations = true, });
             UpdateFilePathSettings(optionsMonitor.CurrentValue);
             var _ = StartChannelReader(); // here is our single reader.
-            _settingsChangeListener =
-                optionsMonitor.OnChange(settings => Task.Run(() => UpdateFilePathSettings(settings)));
+            _settingsChangeListener = optionsMonitor.OnChange(settings => Task.Run(() => UpdateFilePathSettings(settings)));
         }
 
         public void LogError(params string[] logLines) => Log(logLines);
@@ -38,14 +37,11 @@ namespace QBitTorrentSpeedScheduler.Service
             }
         }
 
-        public void Dispose()
-        {
-            _settingsChangeListener?.Dispose();
-        }
+        public void Dispose() => _settingsChangeListener?.Dispose();
 
         internal void UpdateFilePathSettings(Settings settings)
         {
-            var logFile = settings.LogFile ?? new() { Enabled = false };
+            var logFile = settings.LogFile ?? new() { Enabled = false, };
             string? filePath = null;
             if (logFile.Enabled)
             {
@@ -67,8 +63,8 @@ namespace QBitTorrentSpeedScheduler.Service
             _filePath = filePath;
         }
 
-        private static ICollection<string> FormatLines(IEnumerable<string> lines)
-            => lines.Select(x => $@"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {x}").ToList();
+        private static ICollection<string> FormatLines(IEnumerable<string> lines) =>
+            lines.Select(x => $@"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {x}").ToList();
 
         private static void WriteToConsole(IEnumerable<string> logLines)
         {
@@ -81,8 +77,8 @@ namespace QBitTorrentSpeedScheduler.Service
             }
         }
 
-        private Task StartChannelReader()
-            => Task.Run(
+        private Task StartChannelReader() =>
+            Task.Run(
                 async () =>
                 {
                     await foreach (var lines in _linesChannel.Reader.ReadAllAsync())
@@ -101,7 +97,7 @@ namespace QBitTorrentSpeedScheduler.Service
                             }
                             catch (Exception e)
                             {
-                                WriteToConsole(FormatLines(new[] { "file logging failed with error:", e.Message }));
+                                WriteToConsole(FormatLines(new[] { "file logging failed with error:", e.Message, }));
                             }
                         }
                     }
@@ -112,7 +108,6 @@ namespace QBitTorrentSpeedScheduler.Service
 
     internal static partial class Extensions
     {
-        public static IServiceCollection AddLogChannel(this IServiceCollection services)
-            => services.AddSingleton<GlobalLogChannel>();
+        public static IServiceCollection AddLogChannel(this IServiceCollection services) => services.AddSingleton<GlobalLogChannel>();
     }
 }

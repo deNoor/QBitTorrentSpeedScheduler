@@ -14,8 +14,7 @@ namespace QBitTorrentSpeedScheduler.Config
 
     internal partial class RateLimitRule
     {
-        public static readonly IComparer<RateLimitRule> TimeComparer =
-            Comparer<RateLimitRule>.Create((x, y) => x.Time.CompareTo(y.Time));
+        public static readonly IComparer<RateLimitRule> TimeComparer = Comparer<RateLimitRule>.Create((x, y) => x.Time.CompareTo(y.Time));
 
         private static readonly TimeSpan _invalidSerializationTimeSpan = TimeSpan.MinValue;
 
@@ -27,16 +26,13 @@ namespace QBitTorrentSpeedScheduler.Config
             {
                 if (typeToConvert == typeof(TimeSpan))
                 {
-                    throw new InvalidOperationException(
-                        $"Use {nameof(ShortTimeConverter)} for {nameof(TimeSpan)} only.");
+                    throw new InvalidOperationException($"Use {nameof(ShortTimeConverter)} for {nameof(TimeSpan)} only.");
                 }
-                return TimeSpan.TryParse(reader.GetString(), out var timeSpan)
-                    ? timeSpan
-                    : _invalidSerializationTimeSpan;
+                return TimeSpan.TryParse(reader.GetString(), out var timeSpan) ? timeSpan : _invalidSerializationTimeSpan;
             }
 
-            public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options)
-                => writer.WriteStringValue(value.ToString(@"hh\:mm"));
+            public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options) =>
+                writer.WriteStringValue(value.ToString(@"hh\:mm"));
         }
     }
 }
