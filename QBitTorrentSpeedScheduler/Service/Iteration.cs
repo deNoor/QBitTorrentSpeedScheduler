@@ -39,13 +39,14 @@ namespace QBitTorrentSpeedScheduler.Service
                 return Task.Delay(Timeout.InfiniteTimeSpan, _token);
             }
 
-            var (uploadMegaBits, until) = _settings.FindCurrentSpeed(DateTime.Now.TimeOfDay);
+            var now = DateTime.Now.TimeOfDay + TimeSpan.FromMinutes(1); // let's target next interval if it comes too soon.
+            var (uploadMegaBits, until) = _settings.FindCurrentSpeed(now);
             var newUploadSpeed = _converter.BytesFromMegaBits(uploadMegaBits);
             await _api.ApplyToRegularLimitsAsync(async api => await api.SetUploadLimitAsync(newUploadSpeed, _token));
             var nextTime = RemainsUntilNextEvent(until);
             _logChannel.LogInfo($"new upload speed {uploadMegaBits} MBit/s, next run {until}");
             // make sure timer won't wake up a bit early because of negative deviations in precision.
-            nextTime += TimeSpan.FromMilliseconds(50);
+            nextTime += TimeSpan.FromMilliseconds(100);
             return Task.Delay(nextTime, _token);
         }
 
