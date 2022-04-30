@@ -20,8 +20,7 @@ public class Program
     public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
            .UseWindowsService()
-           .ConfigureLogging(
-                builder => builder.ClearProviders().AddGlobalLogChannel().LogMyCodeOnly())
+           .ConfigureLogging(builder => builder.ClearProviders().AddGlobalLogChannel().LogMyCodeOnly())
            .ConfigureAppConfiguration(builder => builder.AddAllConfig())
            .ConfigureServices((hostContext, services) => services.AddAllConfig(hostContext.Configuration).AddHostedWorker())
            .UseDefaultServiceProvider(
