@@ -3,32 +3,32 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using QBitTorrentSpeedScheduler.Config;
+using QBitTorrentSpeedScheduler.Logging;
 using QBitTorrentSpeedScheduler.Service;
 
-namespace QBitTorrentSpeedScheduler
-{
-    public class Program
-    {
-        public static async Task Main()
-        {
-            await AllConfig.InitFilesAsync();
-            using var host = CreateHostBuilder(Array.Empty<string>()).Build();
-            await host.RunAsync();
-        }
+namespace QBitTorrentSpeedScheduler;
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-               .UseWindowsService(options => options.ServiceName = "qBitTorrent speed scheduler")
-               .ConfigureLogging(builder => builder.ClearProviders())
-               .ConfigureAppConfiguration(builder => builder.AddAllConfig())
-               .ConfigureServices((hostContext, services) => services.AddAllConfig(hostContext.Configuration).AddHostedWorker())
-               .UseDefaultServiceProvider(
-                    options =>
-                    {
-#if DEBUG
-                        options.ValidateOnBuild = true;
-                        options.ValidateScopes = true;
-#endif
-                    });
+public class Program
+{
+    public static async Task Main()
+    {
+        await AllConfig.InitFilesAsync();
+        using var host = CreateHostBuilder(Array.Empty<string>()).Build();
+        await host.RunAsync();
     }
+
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+           .UseWindowsService(options => options.ServiceName = "qBitTorrent speed scheduler")
+           .ConfigureLogging(builder => builder.ClearProviders().AddGlobalLogChannel())
+           .ConfigureAppConfiguration(builder => builder.AddAllConfig())
+           .ConfigureServices((hostContext, services) => services.AddAllConfig(hostContext.Configuration).AddHostedWorker())
+           .UseDefaultServiceProvider(
+                options =>
+                {
+#if DEBUG
+                    options.ValidateOnBuild = true;
+                    options.ValidateScopes = true;
+#endif
+                });
 }
