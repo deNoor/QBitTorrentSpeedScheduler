@@ -51,7 +51,7 @@ internal class FileLogWriter : ILogWriter, IDisposable
             {
                 var format = _formatOptions.Value;
                 var timestamp = format.IncludeTimestamp ? $"{StringFormatter.CurrentTimestamp()} " : string.Empty;
-                var exceptionText = exception is not null ? $"{Environment.NewLine}{exception.Message}" : string.Empty;
+                var exceptionText = exception is not null ? $" {exception.Message}" : string.Empty;
                 var line = $"{timestamp}{message}{exceptionText}{Environment.NewLine}";
                 await File.AppendAllTextAsync(filePath, line);
             }
