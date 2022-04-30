@@ -6,5 +6,5 @@ namespace QBitTorrentSpeedScheduler.Logging;
 
 internal interface ILogWriter
 {
-    Task WriteAsync(LogLevel logLevel, string message, Exception? exception);
+    Task WriteAsync(string category, LogLevel logLevel, string message, Exception? exception);
 }

@@ -96,8 +96,7 @@ internal static partial class Extensions
     public static IConfigurationBuilder AddSetting(this IConfigurationBuilder configurationBuilder) =>
         configurationBuilder.AddJsonFile(Settings.FileName, false, true);
 
-    public static IServiceCollection AddSettings(this IServiceCollection serviceCollection, IConfiguration configuration)
-    {
+    public static IServiceCollection AddSettings(this IServiceCollection serviceCollection, IConfiguration configuration) =>
         serviceCollection.AddOptions<Settings>()
            .Bind(configuration.GetSection(nameof(Settings)))
            .Configure(
@@ -106,7 +105,6 @@ internal static partial class Extensions
                     settings.Schedule = settings.Schedule?.Where(x => x.IsValid()).OrderBy(x => x.Time).ToList()
                         ?? new List<RateLimitRule>();
                     settings.Constraints ??= Constraints.Default;
-                });
-        return serviceCollection;
-    }
+                })
+           .Services;
 }

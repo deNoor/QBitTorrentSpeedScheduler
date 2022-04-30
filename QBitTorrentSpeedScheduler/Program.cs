@@ -19,8 +19,9 @@ public class Program
 
     public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
-           .UseWindowsService(options => options.ServiceName = "qBitTorrent speed scheduler")
-           .ConfigureLogging(builder => builder.ClearProviders().AddGlobalLogChannel())
+           .UseWindowsService()
+           .ConfigureLogging(
+                builder => builder.ClearProviders().AddGlobalLogChannel().LogMyCodeOnly())
            .ConfigureAppConfiguration(builder => builder.AddAllConfig())
            .ConfigureServices((hostContext, services) => services.AddAllConfig(hostContext.Configuration).AddHostedWorker())
            .UseDefaultServiceProvider(

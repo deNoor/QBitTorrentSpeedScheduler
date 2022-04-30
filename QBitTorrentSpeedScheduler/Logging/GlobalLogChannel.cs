@@ -9,19 +9,19 @@ namespace QBitTorrentSpeedScheduler.Logging;
 
 internal class GlobalLogChannel
 {
-    private readonly Channel<(LogLevel LogLevel, string Message, Exception? Exception)> _channel;
+    private readonly Channel<(string Category, LogLevel LogLevel, string Message, Exception? Exception)> _channel;
     private readonly IEnumerable<ILogWriter> _logWriters;
 
     public GlobalLogChannel(IEnumerable<ILogWriter> logWriters)
     {
-        _channel = Channel.CreateUnbounded<(LogLevel LogLevel, string Message, Exception? Exception)>(
+        _channel = Channel.CreateUnbounded<(string Category, LogLevel LogLevel, string Message, Exception? Exception)>(
             new() { SingleReader = true, AllowSynchronousContinuations = true, });
         var _ = StartChannelReader(); // here is our single reader.
         _logWriters = logWriters;
     }
 
-    public void Log(LogLevel logLevel, string message, Exception? exception) =>
-        Task.Run(async () => await _channel.Writer.WriteAsync((logLevel, message, exception)));
+    public void Log(string category, LogLevel logLevel, string message, Exception? exception) =>
+        Task.Run(async () => await _channel.Writer.WriteAsync((category, logLevel, message, exception)));
 
     private Task StartChannelReader() =>
         Task.Run(
@@ -29,10 +29,10 @@ internal class GlobalLogChannel
             {
                 await foreach (var entry in _channel.Reader.ReadAllAsync())
                 {
-                    var (logLevel, message, exception) = entry;
+                    var (category, logLevel, message, exception) = entry;
                     foreach (var logWriter in _logWriters)
                     {
-                        await logWriter.WriteAsync(logLevel, message, exception);
+                        await logWriter.WriteAsync(category, logLevel, message, exception);
                     }
                 }
             });

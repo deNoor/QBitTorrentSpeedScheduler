@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using QBitTorrentSpeedScheduler.Config;
+using QBitTorrentSpeedScheduler.Helper;
 
 namespace QBitTorrentSpeedScheduler.Logging;
 
@@ -17,21 +18,26 @@ internal class FileLogWriter : ILogWriter, IDisposable
     };
 
     private readonly ConsoleLogWriter _consoleLog;
+    private readonly IOptions<GlobalLogChannelOptions> _formatOptions;
     private readonly IDisposable? _settingsChangeListener;
 
     private volatile string? _filePath;
     private volatile bool _errorsOnly;
 
-    public FileLogWriter(ConsoleLogWriter consoleLog, IOptionsMonitor<Settings> optionsMonitor)
+    public FileLogWriter(
+        ConsoleLogWriter consoleLog,
+        IOptions<GlobalLogChannelOptions> formatOptions,
+        IOptionsMonitor<Settings> optionsMonitor)
     {
         _consoleLog = consoleLog;
+        _formatOptions = formatOptions;
         UpdateFilePathSettings(optionsMonitor.CurrentValue);
         _settingsChangeListener = optionsMonitor.OnChange(settings => Task.Run(() => UpdateFilePathSettings(settings)));
     }
 
     public void Dispose() => _settingsChangeListener?.Dispose();
 
-    public async Task WriteAsync(LogLevel logLevel, string message, Exception? exception)
+    public async Task WriteAsync(string category, LogLevel logLevel, string message, Exception? exception)
     {
         if (_errorsOnly && !_treatAsError.Contains(logLevel))
         {
@@ -43,15 +49,18 @@ internal class FileLogWriter : ILogWriter, IDisposable
         {
             try
             {
-                var logLine = $"{message}{exception?.Message}";
-                await File.AppendAllTextAsync(filePath, logLine);
+                var format = _formatOptions.Value;
+                var timestamp = format.IncludeTimestamp ? $"{StringFormatter.CurrentTimestamp()} " : string.Empty;
+                var exceptionText = exception is not null ? $"{Environment.NewLine}{exception.Message}" : string.Empty;
+                var line = $"{timestamp}{message}{exceptionText}{Environment.NewLine}";
+                await File.AppendAllTextAsync(filePath, line);
             }
             catch (TaskCanceledException)
             {
             }
             catch (Exception e)
             {
-                await _consoleLog.WriteAsync(LogLevel.Critical, "file logging failed with error: ", e);
+                await _consoleLog.WriteAsync(nameof(FileLogWriter), LogLevel.Critical, "file logging failed with error: ", e);
             }
         }
     }
@@ -84,5 +93,5 @@ internal class FileLogWriter : ILogWriter, IDisposable
 internal static partial class Extensions
 {
     private static IServiceCollection AddFileLogWriter(this IServiceCollection services) =>
-        services.AddSingleton<ILogWriter, FileLogWriter>();
+        services.AddSingleton<FileLogWriter>().AddSingleton<ILogWriter, FileLogWriter>();
 }
