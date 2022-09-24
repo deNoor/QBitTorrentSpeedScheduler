@@ -1,4 +1,6 @@
-﻿namespace QBitTorrentSpeedScheduler.Config;
+﻿using System;
+
+namespace QBitTorrentSpeedScheduler.Config;
 
 internal partial class LogFile
 {
@@ -10,4 +12,17 @@ internal partial class LogFile
 internal partial class LogFile
 {
     internal static string FileName { get; } = $"{nameof(QBitTorrentSpeedScheduler)}.log";
+
+    public static LogFile Default { get; } = new LogFile { Enabled = false, Folder = AppContext.BaseDirectory, ErrorsOnly = false, }.Configure();
+
+    public LogFile Configure()
+    {
+        var folder = Folder;
+        if (string.IsNullOrWhiteSpace(folder))
+        {
+            folder = AppContext.BaseDirectory;
+        }
+        Folder = folder;
+        return this;
+    }
 }

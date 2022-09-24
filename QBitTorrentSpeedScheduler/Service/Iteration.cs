@@ -34,7 +34,7 @@ internal class Iteration
 
     public async Task<Task> DoAsync()
     {
-        if (_settings.NothingToDo(out var reason))
+        if (_settings.AreInvalid(out var reason))
         {
             _logger.LogWarning(reason);
             return Task.Delay(Timeout.InfiniteTimeSpan, _token);

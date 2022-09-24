@@ -67,15 +67,11 @@ internal class FileLogWriter : ILogWriter, IDisposable
 
     internal void UpdateFilePathSettings(Settings settings)
     {
-        var logFile = settings.LogFile ?? new() { Enabled = false, };
+        var logFile = settings.LogFile!;
         string? filePath = null;
         if (logFile.Enabled)
         {
-            var folder = logFile.Folder;
-            if (string.IsNullOrWhiteSpace(folder))
-            {
-                folder = AppContext.BaseDirectory;
-            }
+            var folder = logFile.Folder!;
             if (Directory.Exists(Directory.GetDirectoryRoot(folder))) // check disk letter exists.
             {
                 if (!Directory.Exists(folder))

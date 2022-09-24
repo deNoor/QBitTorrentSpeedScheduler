@@ -16,14 +16,14 @@ internal class GlobalLogChannel
     {
         _channel = Channel.CreateUnbounded<(string Category, LogLevel LogLevel, string Message, Exception? Exception)>(
             new() { SingleReader = true, AllowSynchronousContinuations = true, });
-        var _ = StartChannelReader(); // here is our single reader.
+        BeginChannelRead(); // here is our single reader.
         _logWriters = logWriters;
     }
 
     public void Log(string category, LogLevel logLevel, string message, Exception? exception) =>
         Task.Run(async () => await _channel.Writer.WriteAsync((category, logLevel, message, exception)));
 
-    private Task StartChannelReader() =>
+    private void BeginChannelRead() =>
         Task.Run(
             async () =>
             {

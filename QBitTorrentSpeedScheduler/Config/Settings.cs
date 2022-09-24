@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -24,8 +25,8 @@ internal partial class Settings
 
     internal static readonly Settings Default = new()
     {
-        Network = new() { Port = Network.DefaultPort, },
-        LogFile = new() { Enabled = false, Folder = AppContext.BaseDirectory, ErrorsOnly = false, },
+        Network = Network.Default,
+        LogFile = LogFile.Default,
         Schedule = new()
         {
             new() { Time = TimeSpan.Parse("01:00"), UploadMegaBits = 25, },
@@ -48,6 +49,10 @@ internal partial class Settings
         WriteIndented = true,
     };
 
+    private bool _validated;
+    private bool _areInvalid;
+    private string _errors = string.Empty;
+
     public static async Task InitFileAsync()
     {
         var filePath = Path.Combine(AppContext.BaseDirectory, FileName);
@@ -58,20 +63,31 @@ internal partial class Settings
         }
     }
 
-    public bool NothingToDo(out string reason)
+    public bool AreInvalid(out string reason)
     {
-        reason = string.Empty;
+        reason = _errors;
+        if (_validated)
+        {
+            return _areInvalid;
+        }
+        var errors = new StringBuilder();
+        errors.AppendLine();
+        var areInvalid = false;
         if (!Schedule!.Any())
         {
-            reason = "schedule is empty - nothing to do.";
-            return true;
+            errors.AppendLine("schedule is empty - nothing to do.");
+            areInvalid = true;
         }
         if (Network is null || Network.Port == default)
         {
-            reason = "webUI url not configured - nothing to do.";
-            return true;
+            errors.AppendLine("webUI url not configured.");
+            areInvalid = true;
         }
-        return false;
+        _errors = errors.ToString();
+        reason = _errors;
+        _areInvalid = areInvalid;
+        _validated = true;
+        return _areInvalid;
     }
 
     public (int UploadMegaBits, TimeSpan Until) FindCurrentSpeed(TimeSpan now)
@@ -102,6 +118,8 @@ internal static partial class Extensions
            .Configure(
                 settings =>
                 {
+                    settings.Network ??= Network.Default;
+                    (settings.LogFile ??= LogFile.Default).Configure();
                     settings.Schedule = settings.Schedule?.Where(x => x.IsValid()).OrderBy(x => x.Time).ToList()
                         ?? new List<RateLimitRule>();
                     settings.Constraints ??= Constraints.Default;

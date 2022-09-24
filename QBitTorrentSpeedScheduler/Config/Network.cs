@@ -8,4 +8,6 @@ internal partial class Network
 internal partial class Network
 {
     public const int DefaultPort = 22596;
+
+    public static Network Default { get; } = new() { Port = Network.DefaultPort, };
 }
