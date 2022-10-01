@@ -1,8 +1,8 @@
 # QBitTorrentSpeedScheduler
 Windows service to control upload speed of [qBittorrent](https://www.qbittorrent.org/) using its [WebUI](https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)) (remote control).
 
-Made for personal usage — feature requests or improvements are not accepted.
-
+Made for personal usage — feature requests or improvements are not accepted.\
+No user interface, managed through a configuration file.\
 Requires [.NET 6](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) runtime. Choose Desktop Runtime for Windows x64. Use `dotnet --info` to check if you already have it.
 
 ### 1. Setup qBittorrent. 
@@ -15,10 +15,13 @@ Requires [.NET 6](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) runtim
 - copy to a preferred location
   - use scripts from `cmd` to (un)install as Windows service
   - -or-
-  - run as regular exe to use in console application mode
-- it will create default `settings` file in the same folder if none is present
-- edit and save settings to automatically apply, no restart is required
+  - run as regular exe to use in console mode
+- it will create a default `settings` file in the same folder if none is present
+- edit and save settings to apply changes, app restart is not required
 
-Controls Regular limits only. You can enable Alternative limit any time for manual speed control. 
+Controls QBitTorrent Regular limits only. You can switch to Alternative limits any time for manual speed control. 
 
-Portable. Does not write anywhere (except the log file by the path you specified in settings, disabled by default). If the file is blocked from deletion stop Windows service first. To uninstall Windows service just unregister it using script from `cmd` folder.
+Portable. Does not write anywhere (except the log file by the path you specified in settings, logging is disabled by default). If the log file is blocked from deletion, stop the Windows service first.
+
+### Uninstall
+Just unregister the Windows service using the script from `cmd` folder and delete the app folder.
