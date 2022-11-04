@@ -15,7 +15,7 @@ internal partial class LogFile
 
     public static LogFile Default { get; } = new LogFile { Enabled = false, Folder = AppContext.BaseDirectory, ErrorsOnly = false, }.Configure();
 
-    public LogFile Configure()
+    internal LogFile Configure()
     {
         var folder = Folder;
         if (string.IsNullOrWhiteSpace(folder))

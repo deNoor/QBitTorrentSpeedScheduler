@@ -42,6 +42,10 @@ internal class Iteration
 
         var now = DateTime.Now.TimeOfDay + TimeSpan.FromMinutes(1); // let's target next interval if it comes too soon.
         var (uploadMegaBits, until) = _settings.FindCurrentSpeed(now);
+        if (_settings.Constraints?.PauseIfZeroSpeed is true)
+        {
+            await (uploadMegaBits is 0 ? _api.PauseTorrents(_token) : _api.ResumeTorrents(_token));
+        }
         var newUploadSpeed = _converter.BytesFromMegaBits(uploadMegaBits);
         await _api.ApplyToRegularLimitsAsync(async api => await api.SetUploadLimitAsync(newUploadSpeed, _token));
         var nextTime = RemainsUntilNextEvent(until);

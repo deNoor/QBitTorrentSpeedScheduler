@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -27,24 +26,24 @@ internal class WebUiApi
 
     public async Task<int> GetSpeedLimitsModeAsync(CancellationToken token = default)
     {
-        var response = await _httpClient.GetAsync("speedLimitsMode", token);
-        await EnsureSuccessStatusCode(response);
+        var response = await _httpClient.GetAsync("transfer/speedLimitsMode", token);
+        await EnsureSuccessStatusCodeAsync(response);
         return await JsonSerializer.DeserializeAsync<int>(await response.Content.ReadAsStreamAsync(token), cancellationToken: token);
     }
 
     public async Task ToggleSpeedLimitsModeAsync(CancellationToken token = default)
     {
-        var response = await _httpClient.GetAsync("toggleSpeedLimitsMode", token);
-        await EnsureSuccessStatusCode(response);
+        var response = await _httpClient.GetAsync("transfer/toggleSpeedLimitsMode", token);
+        await EnsureSuccessStatusCodeAsync(response);
     }
 
     public async Task SetUploadLimitAsync(int speedInBytes, CancellationToken token = default)
     {
         var response = await _httpClient.PostAsync(
-            "setUploadLimit",
-            new FormUrlEncodedContent(new Dictionary<string, string?> { { "limit", $"{speedInBytes}" }, }!),
+            "transfer/setUploadLimit",
+            new FormUrlEncodedContent(new Dictionary<string, string?> { { "limit", $"{speedInBytes}" }, }),
             token);
-        await EnsureSuccessStatusCode(response);
+        await EnsureSuccessStatusCodeAsync(response);
     }
 
     public async Task ApplyToRegularLimitsAsync(Func<WebUiApi, Task> action)
@@ -53,7 +52,25 @@ internal class WebUiApi
         await action(this);
     }
 
-    private async Task EnsureSuccessStatusCode(HttpResponseMessage response)
+    public async Task PauseTorrents(CancellationToken token = default)
+    {
+        var response = await _httpClient.PostAsync(
+            "torrents/pause",
+            new FormUrlEncodedContent(new Dictionary<string, string?> { { "hashes", "all" }, }),
+            token);
+        await EnsureSuccessStatusCodeAsync(response);
+    }
+
+    public async Task ResumeTorrents(CancellationToken token = default)
+    {
+        var response = await _httpClient.PostAsync(
+            "torrents/resume",
+            new FormUrlEncodedContent(new Dictionary<string, string?> { { "hashes", "all" }, }),
+            token);
+        await EnsureSuccessStatusCodeAsync(response);
+    }
+
+    private async Task EnsureSuccessStatusCodeAsync(HttpResponseMessage response)
     {
         if (!response.IsSuccessStatusCode)
         {
@@ -112,9 +129,8 @@ internal static partial class Extensions
             (sc, client) =>
             {
                 var port = sc.GetRequiredService<IOptionsMonitor<Settings>>().CurrentValue.Network?.Port ?? Network.DefaultPort;
-                client.BaseAddress = new($"http://127.0.0.1:{port}/api/v2/transfer/");
+                client.BaseAddress = new($"http://127.0.0.1:{port}/api/v2/");
                 client.Timeout = TimeSpan.FromSeconds(10);
-                client.DefaultRequestVersion = HttpVersion.Version20;
             });
         return services;
     }

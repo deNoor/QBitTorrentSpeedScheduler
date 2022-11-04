@@ -12,7 +12,7 @@ public class Program
 {
     public static async Task Main()
     {
-        await AllConfig.InitFilesAsync();
+        await AllConfig.InitFileAsync();
         using var host = CreateHostBuilder(Array.Empty<string>()).Build();
         await host.RunAsync();
     }
