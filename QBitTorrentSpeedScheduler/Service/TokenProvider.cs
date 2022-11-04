@@ -53,9 +53,9 @@ internal class TokenProvider : IDisposable
                         var previousCts = Interlocked.Exchange(
                             ref _iterationCts,
                             CancellationTokenSource.CreateLinkedTokenSource(globalStoppingToken));
-                        previousCts.CancelAfter(_applyChangesCooldown);
                         await Task.Delay(_applyChangesCooldown, globalStoppingToken);
                         Volatile.Write(ref blocked, 0);
+                        previousCts.Cancel();
                         previousCts.Dispose();
                     },
                     globalStoppingToken);
