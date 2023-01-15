@@ -27,5 +27,5 @@ internal class GlobalChannelLogger : ILogger
 
     public bool IsEnabled(LogLevel logLevel) => true;
 
-    public IDisposable BeginScope<TState>(TState state) => default!;
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull => default;
 }
