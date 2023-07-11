@@ -126,9 +126,9 @@ internal static partial class Extensions
     {
         services.AddScoped<WebUiApi>();
         services.AddHttpClient<WebUiApi>(
-            (sc, client) =>
+            (provider, client) =>
             {
-                var port = sc.GetRequiredService<IOptionsMonitor<Settings>>().CurrentValue.Network?.Port ?? Network.DefaultPort;
+                var port = provider.GetRequiredService<IOptionsMonitor<Settings>>().CurrentValue.Network?.Port ?? Network.DefaultPort;
                 client.BaseAddress = new($"http://127.0.0.1:{port}/api/v2/");
                 client.Timeout = TimeSpan.FromSeconds(10);
             });
