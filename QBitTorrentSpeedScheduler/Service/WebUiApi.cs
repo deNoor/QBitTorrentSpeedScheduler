@@ -26,14 +26,20 @@ internal class WebUiApi
 
     public async Task<int> GetSpeedLimitsModeAsync(CancellationToken token = default)
     {
-        var response = await _httpClient.GetAsync("transfer/speedLimitsMode", token);
+        var response = await _httpClient.PostAsync(
+            "transfer/speedLimitsMode",
+            new FormUrlEncodedContent(new Dictionary<string, string?>()),
+            token);
         await EnsureSuccessStatusCodeAsync(response);
         return await JsonSerializer.DeserializeAsync<int>(await response.Content.ReadAsStreamAsync(token), cancellationToken: token);
     }
 
     public async Task ToggleSpeedLimitsModeAsync(CancellationToken token = default)
     {
-        var response = await _httpClient.GetAsync("transfer/toggleSpeedLimitsMode", token);
+        var response = await _httpClient.PostAsync(
+            "transfer/toggleSpeedLimitsMode",
+            new FormUrlEncodedContent(new Dictionary<string, string?>()),
+            token);
         await EnsureSuccessStatusCodeAsync(response);
     }
 
