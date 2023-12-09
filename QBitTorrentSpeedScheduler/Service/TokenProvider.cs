@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using QBitTorrentSpeedScheduler.Config;
 
@@ -10,36 +11,16 @@ namespace QBitTorrentSpeedScheduler.Service;
 internal class TokenProvider : IDisposable
 {
     private readonly TimeSpan _applyChangesCooldown = TimeSpan.FromSeconds(2);
-    private readonly IOptionsMonitor<Settings> _optionsMonitor;
+    private readonly IDisposable? _settingsChangeListener;
     private volatile CancellationTokenSource? _iterationCts;
-    private IDisposable? _settingsChangeListener;
     private bool _disposed;
 
-    public TokenProvider(IOptionsMonitor<Settings> optionsMonitor) => _optionsMonitor = optionsMonitor;
-
-    public CancellationToken ScopedToken
+    public TokenProvider(IHostApplicationLifetime applicationLifetime, IOptionsMonitor<Settings> optionsMonitor)
     {
-        get
-        {
-            ThrowIfDisposed();
-            if (_iterationCts is null)
-            {
-                ThrowIfNotAttached();
-            }
-            return _iterationCts!.Token;
-        }
-    }
-
-    public void AttachToWorker(CancellationToken globalStoppingToken)
-    {
-        if (globalStoppingToken == CancellationToken.None)
-        {
-            ThrowIfNotAttached();
-        }
-        ThrowIfDisposed();
+        var globalStoppingToken = applicationLifetime.ApplicationStopping;
         _iterationCts = CancellationTokenSource.CreateLinkedTokenSource(globalStoppingToken);
         var blocked = 0; // captured by OnChange delegate.
-        _settingsChangeListener = _optionsMonitor.OnChange(
+        _settingsChangeListener = optionsMonitor.OnChange(
             _ =>
             {
                 Task.Run(
@@ -62,17 +43,23 @@ internal class TokenProvider : IDisposable
             });
     }
 
+    public CancellationToken ScopedToken
+    {
+        get
+        {
+            ThrowIfDisposed();
+            return _iterationCts!.Token;
+        }
+    }
+
     public void Dispose()
     {
-        _iterationCts?.Cancel();
-        _iterationCts?.Dispose();
+        var iterationCts = _iterationCts;
+        iterationCts?.Cancel();
+        iterationCts?.Dispose();
         _settingsChangeListener?.Dispose();
         _disposed = true;
     }
-
-    private static void ThrowIfNotAttached() =>
-        throw new InvalidOperationException(
-            $"Need to register service worker token with {nameof(TokenProvider)}.{nameof(AttachToWorker)}.");
 
     private void ThrowIfDisposed()
     {

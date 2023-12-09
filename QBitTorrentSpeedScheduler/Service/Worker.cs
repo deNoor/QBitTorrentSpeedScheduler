@@ -15,21 +15,18 @@ internal class Worker : BackgroundService
     private readonly IOptionsMonitor<Settings> _optionsMonitor;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<Worker> _logger;
-    private readonly TokenProvider _tokenProvider;
     private int _failCount;
 
     public Worker(
         IHostApplicationLifetime appLifetime,
         IOptionsMonitor<Settings> optionsMonitor,
         IServiceScopeFactory scopeFactory,
-        ILogger<Worker> logger,
-        TokenProvider tokenProvider)
+        ILogger<Worker> logger)
     {
         _appLifetime = appLifetime;
         _optionsMonitor = optionsMonitor;
         _scopeFactory = scopeFactory;
         _logger = logger;
-        _tokenProvider = tokenProvider;
     }
 
     public override Task StartAsync(CancellationToken cancellationToken)
@@ -68,7 +65,6 @@ internal class Worker : BackgroundService
 
     private async Task WorkerMain(CancellationToken stoppingToken)
     {
-        _tokenProvider.AttachToWorker(stoppingToken);
         await DelayBeforeStart(stoppingToken);
         while (!stoppingToken.IsCancellationRequested && !MaxFailsCount())
         {
