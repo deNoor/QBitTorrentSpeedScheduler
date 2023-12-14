@@ -34,6 +34,11 @@ internal class Iteration
 
     public async Task<Task> DoAsync()
     {
+        if (_token.IsCancellationRequested)
+        {
+            return Task.FromCanceled(_token);
+        }
+
         if (_settings.AreInvalid(out var reason))
         {
             _logger.LogWarning(reason);

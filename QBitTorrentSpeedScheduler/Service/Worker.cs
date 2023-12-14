@@ -54,7 +54,7 @@ internal class Worker : BackgroundService
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, "unhandled exception in main path: ");
+                    _logger.LogCritical(e, "unhandled exception in main path: ");
                 }
                 finally
                 {
