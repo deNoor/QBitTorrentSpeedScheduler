@@ -15,7 +15,7 @@ internal class GlobalLogChannel
     public GlobalLogChannel(IEnumerable<ILogWriter> logWriters)
     {
         _channel = Channel.CreateUnbounded<(string Category, LogLevel LogLevel, string Message, Exception? Exception)>(
-            new() { SingleReader = true, AllowSynchronousContinuations = true, });
+            new() { SingleReader = true, });
         BeginChannelRead(); // here is our single reader.
         _logWriters = logWriters;
     }
